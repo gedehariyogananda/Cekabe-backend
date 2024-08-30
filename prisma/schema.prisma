@@ -1,0 +1,417 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model booking_schedule_formats {
+  id     BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  type   String @unique(map: "booking_schedule_formats_type_unique") @db.VarChar(255)
+  format String @db.VarChar(255)
+}
+
+model cache {
+  key        String @id @db.VarChar(255)
+  value      String @db.MediumText
+  expiration Int
+}
+
+model cache_locks {
+  key        String @id @db.VarChar(255)
+  owner      String @db.VarChar(255)
+  expiration Int
+}
+
+model customers {
+  customer_id   String           @id @db.Char(255)
+  customer_name String           @db.VarChar(255)
+  status        customers_status @default(Active)
+  transactions  transaction[]
+  histories     history[]
+}
+
+model date_formats {
+  id     BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  type   String @unique(map: "date_formats_type_unique") @db.VarChar(255)
+  format String @db.VarChar(255)
+}
+
+model docks {
+  dock_id          String             @id @db.Char(255)
+  dock_name        String             @db.VarChar(255)
+  location_id      String             @db.Char(255)
+  max_capacity     Int
+  status           docks_status       @default(Active)
+  locations        locations          @relation(fields: [location_id], references: [location_id], onUpdate: Restrict, map: "docks_location_id_foreign")
+  setups           setups[]
+  transactions     transaction[]
+  unloading_setups unloading_setups[]
+
+  @@index([location_id], map: "docks_location_id_foreign")
+}
+
+model failed_jobs {
+  id         BigInt   @id @default(autoincrement()) @db.UnsignedBigInt
+  uuid       String   @unique(map: "failed_jobs_uuid_unique") @db.VarChar(255)
+  connection String   @db.Text
+  queue      String   @db.Text
+  payload    String   @db.LongText
+  exception  String   @db.LongText
+  failed_at  DateTime @default(now()) @db.Timestamp(0)
+}
+
+model gates {
+  gate_id          String             @id @db.Char(255)
+  gate_name        String             @db.VarChar(255)
+  location_id      String             @db.Char(255)
+  longitude        Float
+  latitude         Float
+  status           gates_status       @default(Active)
+  locations        locations          @relation(fields: [location_id], references: [location_id], onUpdate: Restrict, map: "gates_location_id_foreign")
+  setups           setups[]
+  unloading_setups unloading_setups[]
+
+  @@index([location_id], map: "gates_location_id_foreign")
+}
+
+model goods_types {
+  goods_type_id    String             @id @db.Char(255)
+  goods_type       String             @db.VarChar(255)
+  status           goods_types_status @default(Active)
+  setups           setups[]
+  unloading_setups unloading_setups[]
+  transactions     transaction[]
+  histories        history[]
+}
+
+model job_batches {
+  id             String  @id @db.VarChar(255)
+  name           String  @db.VarChar(255)
+  total_jobs     Int
+  pending_jobs   Int
+  failed_jobs    Int
+  failed_job_ids String  @db.LongText
+  options        String? @db.MediumText
+  cancelled_at   Int?
+  created_at     Int
+  finished_at    Int?
+}
+
+model jobs {
+  id           BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  queue        String @db.VarChar(255)
+  payload      String @db.LongText
+  attempts     Int    @db.UnsignedTinyInt
+  reserved_at  Int?   @db.UnsignedInt
+  available_at Int    @db.UnsignedInt
+  created_at   Int    @db.UnsignedInt
+
+  @@index([queue], map: "jobs_queue_index")
+}
+
+model locations {
+  location_id   String                  @id @db.Char(255)
+  location      String                  @db.VarChar(255)
+  location_type locations_location_type @default(Warehouse)
+  status        locations_status        @default(Active)
+  docks         docks[]
+  gates         gates[]
+  users         users[]
+}
+
+model migrations {
+  id        Int    @id @default(autoincrement()) @db.UnsignedInt
+  migration String @db.VarChar(255)
+  batch     Int
+}
+
+model password_reset_tokens {
+  email      String    @id @db.VarChar(255)
+  token      String    @db.VarChar(255)
+  created_at DateTime? @db.Timestamp(0)
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+
+model queue_formats {
+  id     BigInt @id @default(autoincrement()) @db.UnsignedBigInt
+  type   String @unique(map: "queue_formats_type_unique") @db.VarChar(255)
+  format String @db.VarChar(255)
+}
+
+model queue_numbers {
+  id          BigInt    @id @default(autoincrement()) @db.UnsignedBigInt
+  type        String    @unique @db.VarChar(255)
+  last_number String    @db.VarChar(255)
+  last_date   DateTime?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+
+model sessions {
+  id            String  @id @db.VarChar(255)
+  user_id       BigInt? @db.UnsignedBigInt
+  ip_address    String? @db.VarChar(45)
+  user_agent    String? @db.Text
+  payload       String  @db.LongText
+  last_activity Int
+
+  @@index([last_activity], map: "sessions_last_activity_index")
+  @@index([user_id], map: "sessions_user_id_index")
+}
+
+model setups {
+  loading_id          String        @id @db.Char(255)
+  loading_description String        @db.VarChar(255)
+  vehicle_type_id     String        @db.Char(255)
+  goods_type_id       String        @db.Char(255)
+  gate_id             String        @db.Char(255)
+  dock_id             String        @db.Char(255)
+  leadtime            Decimal       @db.Decimal(8, 2)
+  status              setups_status @default(Active)
+  docks               docks         @relation(fields: [dock_id], references: [dock_id], onUpdate: Restrict, map: "setups_dock_id_foreign")
+  gates               gates         @relation(fields: [gate_id], references: [gate_id], onUpdate: Restrict, map: "setups_gate_id_foreign")
+  goods_types         goods_types   @relation(fields: [goods_type_id], references: [goods_type_id], onUpdate: Restrict, map: "setups_goods_type_id_foreign")
+  vehicle_types       vehicle_types @relation(fields: [vehicle_type_id], references: [vehicle_type_id], onUpdate: Restrict, map: "setups_vehicle_type_id_foreign")
+
+  @@index([dock_id], map: "setups_dock_id_foreign")
+  @@index([gate_id], map: "setups_gate_id_foreign")
+  @@index([goods_type_id], map: "setups_goods_type_id_foreign")
+  @@index([vehicle_type_id], map: "setups_vehicle_type_id_foreign")
+}
+
+model unloading_setups {
+  loading_id          String                  @id @db.Char(255)
+  loading_description String                  @db.VarChar(255)
+  vehicle_type_id     String                  @db.Char(255)
+  goods_type_id       String                  @db.Char(255)
+  gate_id             String                  @db.Char(255)
+  dock_id             String                  @db.Char(255)
+  leadtime            Decimal                 @db.Decimal(8, 2)
+  status              unloading_setups_status @default(Active)
+  docks               docks                   @relation(fields: [dock_id], references: [dock_id], onUpdate: Restrict, map: "unloading_setups_dock_id_foreign")
+  gates               gates                   @relation(fields: [gate_id], references: [gate_id], onUpdate: Restrict, map: "unloading_setups_gate_id_foreign")
+  goods_types         goods_types             @relation(fields: [goods_type_id], references: [goods_type_id], onUpdate: Restrict, map: "unloading_setups_goods_type_id_foreign")
+  vehicle_types       vehicle_types           @relation(fields: [vehicle_type_id], references: [vehicle_type_id], onUpdate: Restrict, map: "unloading_setups_vehicle_type_id_foreign")
+
+  @@index([dock_id], map: "unloading_setups_dock_id_foreign")
+  @@index([gate_id], map: "unloading_setups_gate_id_foreign")
+  @@index([goods_type_id], map: "unloading_setups_goods_type_id_foreign")
+  @@index([vehicle_type_id], map: "unloading_setups_vehicle_type_id_foreign")
+}
+
+model users {
+  user_id        String       @id @db.Char(255)
+  username       String       @unique @db.VarChar(255)
+  password       String       @db.VarChar(255)
+  entity         users_entity @default(CKB)
+  location_id    String?      @db.Char(255)
+  status         users_status @default(Active)
+  remember_token String?      @db.VarChar(100)
+  role_user      role_user[]
+  histories      history[]
+  locations      locations?   @relation(fields: [location_id], references: [location_id], onUpdate: Restrict)
+
+  @@index([location_id])
+}
+
+model role_user {
+  user_id String @db.Char(255)
+  role_id BigInt @db.UnsignedBigInt
+  roles   roles  @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  users   users  @relation(fields: [user_id], references: [user_id], onUpdate: Restrict)
+
+  @@unique([user_id, role_id]) // Menambahkan constraint unik untuk relasi
+  @@index([role_id])
+  @@index([user_id])
+}
+
+model roles {
+  id              BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  name            String            @db.VarChar(255)
+  permission_role permission_role[]
+  role_user       role_user[] // Relasi ke role_user (many-to-many)
+}
+
+model permission_role {
+  permission_id BigInt      @db.UnsignedBigInt
+  role_id       BigInt      @db.UnsignedBigInt
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+  roles         roles       @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Restrict)
+
+  @@id([permission_id, role_id]) // Membuat kombinasi sebagai primary key
+}
+
+model permissions {
+  id              BigInt            @id @default(autoincrement()) @db.UnsignedBigInt
+  name            String            @db.VarChar(255)
+  permission_role permission_role[]
+}
+
+model vehicle_types {
+  vehicle_type_id  String               @id @db.Char(255)
+  vehicle_type     String               @db.VarChar(255)
+  status           vehicle_types_status @default(Active)
+  setups           setups[]
+  unloading_setups unloading_setups[]
+  transactions     transaction[]
+  histories        history[]
+}
+
+model Slot {
+  id           Int           @id @default(autoincrement())
+  time         String
+  transactions transaction[]
+
+  @@map("slots")
+}
+
+model transaction {
+  id                    Int       @id @default(autoincrement())
+  transaction_no        String    @unique @db.VarChar(100)
+  queue                 String
+  activity              Activty
+  ref_doc_type          String    @db.Char(100)
+  ref_doc_no            String    @db.Char(100)
+  customer_id           String    @db.Char(100)
+  driver                String    @db.VarChar(100)
+  no_kendaraan          String    @db.Char(100)
+  vehicle_type_id       String    @db.VarChar(100)
+  container_no          String    @db.Char(100)
+  goods_type_id         String    @db.Char(100)
+  no_hp                 String
+  booking_date          String?
+  booking_time          DateTime? @db.Time()
+  dock_id               String?   @db.Char(100)
+  user_id               String?   @db.Char(100)
+  status                status
+  slot_id               Int?
+  weight_gate_in        Float?
+  weight_gate_out       Float?
+  gate_in_time          DateTime?
+  gate_out_time         DateTime?
+  process_start         DateTime? @db.Time()
+  process_finish        DateTime? @db.Time()
+  estimated_leadingtime DateTime? @db.Time()
+  actual_leadingtime    DateTime? @db.Time()
+  checker_id            String?   @db.Char(100)
+  leadtime_gate_in_out  DateTime? @db.Time()
+
+  vehicle_type vehicle_types @relation(fields: [vehicle_type_id], references: [vehicle_type_id])
+  goods_type   goods_types   @relation(fields: [goods_type_id], references: [goods_type_id])
+  slots        Slot?         @relation(fields: [slot_id], references: [id])
+  customer     customers     @relation(fields: [customer_id], references: [customer_id])
+  dock         docks?        @relation(fields: [dock_id], references: [dock_id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("transactions")
+}
+
+model history {
+  id                      Int      @id @default(autoincrement())
+  transaction_no          String   @unique
+  activity                Activty
+  no_kendaraan            String
+  ref_doc_type            String
+  ref_doc_no              String
+  customer_id             String
+  driver                  String
+  vehicle_type_id         String
+  goods_type_id           String
+  weight_gate_in          String
+  weight_gate_out         String
+  gate_in                 DateTime
+  loading_unloading_start DateTime
+  loading_unloading_end   DateTime
+  estimated_leadtime      DateTime @db.Time()
+  actual_leadtime         DateTime @db.Time()
+  user_id                 String
+  gate_out                DateTime
+  lead_time_gate_in_out   DateTime @db.Time()
+
+  user         users         @relation(fields: [user_id], references: [user_id])
+  vehicle_type vehicle_types @relation(fields: [vehicle_type_id], references: [vehicle_type_id])
+  goods_type   goods_types   @relation(fields: [goods_type_id], references: [goods_type_id])
+  customer     customers     @relation(fields: [customer_id], references: [customer_id])
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("histories")
+}
+
+enum status {
+  Booked
+  Open
+  GateIn     @map("Gate In")
+  InProgress @map("In Progress")
+  Loaded
+  Unloaded
+  GateOut    @map("Gate Out")
+  Cancel
+}
+
+enum customers_status {
+  Active
+  Inactive
+}
+
+enum goods_types_status {
+  Active
+  Inactive
+}
+
+enum locations_location_type {
+  Warehouse
+  In_Plant  @map("In-Plant")
+  Crossdock
+}
+
+enum vehicle_types_status {
+  Active
+  Inactive
+}
+
+enum locations_status {
+  Active
+  Inactive
+}
+
+enum users_entity {
+  CKB
+  Non_CKB @map("Non-CKB")
+}
+
+enum docks_status {
+  Active
+  Inactive
+}
+
+enum gates_status {
+  Active
+  Inactive
+}
+
+enum users_status {
+  Active
+  Inactive
+}
+
+enum setups_status {
+  Active
+  Inactive
+}
+
+enum unloading_setups_status {
+  Active
+  Inactive
+}
+
+enum Activty {
+  Loading
+  Unloading
+}
