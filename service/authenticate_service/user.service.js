@@ -1,10 +1,10 @@
-import ResponseError from "../error/response_error.js"
-import prisma from "../lib/prisma.js"
-import { registerUserValidation } from "../validation/user.validation.js"
-import validate from "../validation/validation.js"
 import bcrypt from "bcrypt"
 import { v4 as uuidv4 } from 'uuid';
-import { generateToken } from "../lib/jwt.js"
+import ResponseError from "../../error/response_error.js"
+import validate from "../../validation/validation.js"
+import prisma from "../../lib/prisma.js";
+import { generateToken } from "../../lib/jwt.js";
+import { registerUserValidation } from "../../validation/user.validation.js";
 
 export const register = async (request) => {
     const user = validate(registerUserValidation, request)
