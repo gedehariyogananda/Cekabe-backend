@@ -1,4 +1,5 @@
 import { dockRepository } from "../../repository/dock.repository.js";
+import { gateRepository } from "../../repository/gate.repository.js";
 import { slotRepository } from "../../repository/slot.repository.js";
 import { transactionRepository } from "../../repository/transaction.repository.js";
 
@@ -68,3 +69,13 @@ export const dockSpecificVisibility = async (id) => {
     }
 }
 
+export const getAllGate = async () => {
+    const gates = await gateRepository.findAllGates();
+
+    return gates.map(gate => {
+        return {
+            location_id: gate.location_id,
+            gate_name: gate.gate_name
+        };
+    });
+}
