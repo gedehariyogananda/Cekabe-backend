@@ -9,10 +9,11 @@ dotenv.config()
 
 const app = express();
 
+
 const port = process.env.PORT 
 
 app.use(cookieParser(process.env.COOKIE_PARSER_SECRET))
-app.use(express.json())
+app.use(express.json());
 app.use("/api/v1/", mainRouter)
 
 app.use(errorMiddleware);

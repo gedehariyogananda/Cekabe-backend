@@ -8,6 +8,14 @@ class GateRepository {
             }
         });
     }
+
+    async findAllGatesByAvailableToday(formattedDate){
+        return prisma.gates.findMany({
+            where: {
+                status: "Active"
+            }
+        });
+    }
 }
 
 const gateRepository = new GateRepository();

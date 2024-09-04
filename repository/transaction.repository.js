@@ -68,6 +68,28 @@ class TransactionRepository {
             }
         })
     }
+
+    async getAllTransactionDate(formattedDate){
+        return prisma.transaction.findMany({
+            where: {
+                booking_date: formattedDate
+            }
+        })
+    }
+
+    async createTransaction(transactionData){
+        return prisma.transaction.create({
+            data: transactionData
+        })
+    }
+
+    async getTransactionByNumber(transaction_no){
+        return prisma.transaction.findFirstOrThrow({
+            where: {
+                transaction_no: transaction_no
+            }
+        })
+    }
 }
 
 const transactionRepository = new TransactionRepository();

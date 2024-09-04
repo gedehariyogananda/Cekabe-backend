@@ -9,6 +9,14 @@ class SlotRepository {
             }
         });
     }
+
+    async findTimeSlot(idSlot){
+        return prisma.slot.findFirst({
+            where: {
+                id: idSlot
+            }
+        });
+    }
 }
 
 const slotRepository = new SlotRepository();

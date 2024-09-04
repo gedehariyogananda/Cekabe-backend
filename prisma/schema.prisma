@@ -281,7 +281,7 @@ model transaction {
   container_no               String        @db.Char(100)
   no_hp                      String
   booking_date               String?
-  booking_time               DateTime?     @db.Time(0)
+  booking_time               String?       @db.VarChar(100)
   dock_id                    String?       @db.Char(100)
   status                     status
   slot_id                    Int?

@@ -1,9 +1,15 @@
-const validate = (schema, request) => {
-const result = schema.parse(request);
+import { ZodError } from 'zod'; // Pastikan ZodError diimport
 
-return result
-
+export const validate = (schema, request) => {
+    try {
+        schema.parse(request); // Ini akan melemparkan error jika validasi gagal
+        return {}; // Kembalikan objek kosong jika tidak ada error
+    } catch (error) {
+        if (error instanceof ZodError) {
+            return { error }; // Kembalikan error jika validasi gagal
+        }
+        throw error; // Lemparkan error lain jika ada
+    }
 };
 
-
-export default validate;
+export default validate; //
